@@ -36,6 +36,7 @@ exports.fn = function(item, params) {
 
         var stroke = params.stroke && item.computedAttr('stroke'),
             fill = params.fill && !item.computedAttr('fill', 'none');
+        var missing = [];
 
         // remove stroke*
         if (
@@ -61,6 +62,8 @@ exports.fn = function(item, params) {
                 prefix: '',
                 local: 'stroke'
             });
+
+            missing.push('stroke');
         }
 
         // remove fill*
@@ -85,8 +88,39 @@ exports.fn = function(item, params) {
                         local: 'fill'
                     });
             }
+
+            missing.push('fill');
         }
 
+        // remove paint-order if it is the default order
+        if (item.hasAttr('paint-order')) {
+            if (
+                !item.hasAttr('marker-start') &&
+                !item.hasAttr('marker-mid') &&
+                !item.hasAttr('marker-end')
+            ) {
+                missing.push('markers');
+            }
+
+            var parts = item.attr('paint-order').value.split(/\s+/);
+            for (var i = 0; i < missing.length; i++) {
+                var index = parts.indexOf(missing[i]);
+                if (index >= 0) {
+                    parts.splice(index, 1);
+                }
+            }
+
+            var result = parts.join(' ');
+            if ([
+                'fill stroke markers',
+                'fill stroke', 'fill markers', 'stroke markers',
+                'fill', 'stroke', 'markers', ''
+            ].indexOf(result) >= 0) {
+                item.removeAttr('paint-order');
+            } else {
+                item.attr('paint-order').value = result;
+            }
+        }
     }
 
 };
