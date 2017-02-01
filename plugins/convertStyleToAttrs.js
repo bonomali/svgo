@@ -80,6 +80,10 @@ exports.fn = function(item) {
                         val = val.slice(1, -1);
                     }
 
+                    if (prop == '-inkscape-font-specification') {
+                        return false;
+                    }
+
                     if (stylingProps.indexOf(prop) > -1) {
 
                         attrs[prop] = {
@@ -99,9 +103,23 @@ exports.fn = function(item) {
             EXTEND(item.attrs, attrs);
 
             if (styles.length) {
+                try {
                 item.attr('style').value = styles
-                    .map(function(declaration) { return declaration.join(':') })
+                    .map(function(declaration) {
+                        var prop = declaration[0],
+                            val = declaration[1];
+                        val = val.replace(
+                            /([\-+]?\d*\.?\d+([eE][\-+]?\d+)?)(px|pt|pc|mm|cm|m|in|ft|em|ex|%)/g,
+                            function(match0, value, match2, unit) {
+                                return smartRound(3, parseFloat(value, 10)) + unit;
+                            }
+                        );
+                        return prop + ':' + val;
+                    })
                     .join(';');
+                } catch(ex) {
+                    console.error(ex);
+                }
             } else {
                 item.removeAttr('style');
             }
@@ -114,4 +132,14 @@ exports.fn = function(item) {
 
 function g() {
     return '(?:' + Array.prototype.join.call(arguments, '|') + ')';
+}
+
+function smartRound(precision, data) {
+    var tolerance = +Math.pow(.1, precision).toFixed(precision);
+    if (data.toFixed(precision) != data) {
+        var rounded = +data.toFixed(precision - 1);
+        data = +Math.abs(rounded - data).toFixed(precision + 1) >= tolerance ?
+            +data.toFixed(precision) : rounded;
+    }
+    return data;
 }

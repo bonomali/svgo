@@ -32,7 +32,7 @@ exports.fn = function(item, params) {
         hasStyleOrScript = true;
     }
 
-    if (!hasStyleOrScript && item.isElem(shape) && !item.computedAttr('id')) {
+    if (!hasStyleOrScript && (item.isElem(shape) || item.isElem('text')) && !item.computedAttr('id')) {
 
         var stroke = params.stroke && item.computedAttr('stroke'),
             fill = params.fill && !item.computedAttr('fill', 'none');

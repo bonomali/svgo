@@ -1768,7 +1768,8 @@ exports.elems = {
             gradientUnits: 'objectBoundingBox',
             cx: '50%',
             cy: '50%',
-            r: '50%'
+            r: '50%',
+            spreadMethod: 'pad'
         },
         contentGroups: [
             'descriptive'
